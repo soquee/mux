@@ -52,7 +52,7 @@ var registerTests = [...]struct {
 	4: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
 			mux.Handle("/{int}", failHandler(t)),
-			mux.Handle("/{string}", failHandler(t)),
+			mux.Handle("/{}", failHandler(t)),
 		}
 	}},
 	5: {

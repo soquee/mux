@@ -52,6 +52,10 @@ var paramsTests = [...]struct {
 		path:    "/b",
 		noMatch: true,
 	},
+	4: {
+		routes: []string{"/{}"},
+		path:   "/b",
+	},
 }
 
 // Used as an HTTP status code code to make sure the test path matches at

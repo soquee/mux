@@ -7,9 +7,9 @@
 //
 // Valid types include:
 //
-//     int    eg. -1, 1
-//     uint   eg. 0, 1
-//     float  eg. 1, 1.123, -1.123
+//     int    eg. -1, 1 (int64 in Go)
+//     uint   eg. 0, 1 (uint64 in Go)
+//     float  eg. 1, 1.123, -1.123 (float64 in Go)
 //     string eg. anything ({string} is the same as {})
 //     path   eg. files/123.png (must be the last path component)
 //
@@ -28,9 +28,10 @@
 // in the same position are not allowed.
 // Attempting to register any two of the following routes will panic:
 //
-//     /user/{int}/new
-//     /user/{int}/edit
-//     /user/{string}/edit
+//     /user/{a int}/new
+//     /user/{b int}/edit
+//     /user/{b string}/edit
+//     /user/me
 package mux
 
 import (
