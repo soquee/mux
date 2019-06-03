@@ -32,7 +32,7 @@
 //     /user/{b int}/edit
 //     /user/{b string}/edit
 //     /user/me
-package mux
+package mux // import "code.soquee.net/mux"
 
 import (
 	"context"
