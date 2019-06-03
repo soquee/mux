@@ -59,7 +59,7 @@ const (
 	emptyPanic  = "invalid empty pattern"
 	panicNoRoot = "all handlers must start with /"
 	typStatic   = "static"
-	typWild     = "wild"
+	typWild     = "path"
 	typString   = "string"
 	typUint     = "uint"
 	typInt      = "int"
