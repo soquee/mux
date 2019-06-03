@@ -1,4 +1,4 @@
-// Package pathmux is a fast and safe HTTP multiplexer.
+// Package mux is a fast and safe HTTP multiplexer.
 //
 // URL Parameters
 //
@@ -44,7 +44,7 @@
 //
 //     /user/{int}/edit
 //     /user/{string}/edit
-package pathmux
+package mux
 
 import (
 	"fmt"
@@ -264,8 +264,8 @@ func (n *node) match(path string) (match string, remain string) {
 	panic("unknown type")
 }
 
-// NewServeMux allocates and returns a new ServeMux.
-func NewServeMux(opts ...Option) *ServeMux {
+// New allocates and returns a new ServeMux.
+func New(opts ...Option) *ServeMux {
 	mux := &ServeMux{
 		node: node{
 			name:    "/",
