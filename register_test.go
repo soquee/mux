@@ -76,10 +76,10 @@ var registerTests = [...]struct {
 		},
 	},
 	7: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("/{*}/user", failHandler(t))}
+		return []mux.Option{mux.Handle("/{path}/user", failHandler(t))}
 	}},
 	8: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("/{*named}/user", failHandler(t))}
+		return []mux.Option{mux.Handle("/{named path}/user", failHandler(t))}
 	}},
 	9: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
@@ -95,14 +95,14 @@ var registerTests = [...]struct {
 	}},
 	12: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/bad/{}", failHandler(t)),
-			mux.Handle("/bad/{*}", failHandler(t)),
+			mux.Handle("/bad/{int}", failHandler(t)),
+			mux.Handle("/bad/{path}", failHandler(t)),
 		}
 	}},
 	13: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/bad/{}/end", failHandler(t)),
-			mux.Handle("/bad/{*}/end", failHandler(t)),
+			mux.Handle("/bad/{int}/end", failHandler(t)),
+			mux.Handle("/bad/{path}/end", failHandler(t)),
 		}
 	}},
 	14: {
@@ -144,12 +144,33 @@ var registerTests = [...]struct {
 			{path: "/a/c", code: 404},
 		},
 	},
-	//17: {panics: true, routes: func(t *testing.T) []mux.Option {
-	//	return []mux.Option{
-	//		mux.Handle("/{uint}", failHandler(t)),
-	//		mux.Handle("/me", failHandler(t)),
-	//	}
-	//}},
+	17: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("/{uint}", failHandler(t)),
+			mux.Handle("/me", failHandler(t)),
+		}
+	}},
+	18: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("/{static}", failHandler(t)),
+		}
+	}},
+	19: {
+		routes: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Handle("/", codeHandler(t, 2)),
+			}
+		},
+		expect: []expected{
+			{path: "/", code: 2},
+		},
+	},
+	20: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("/{a int}/a", failHandler(t)),
+			mux.Handle("/{b int}/b", failHandler(t)),
+		}
+	}},
 }
 
 func TestRegisterRoutes(t *testing.T) {
@@ -164,11 +185,11 @@ func TestRegisterRoutes(t *testing.T) {
 					t.Errorf("Did not expect panic, got=%q", r)
 				}
 			}()
-			mux := mux.New(tc.routes(t)...)
+			m := mux.New(tc.routes(t)...)
 
 			for _, e := range tc.expect {
 				rec := httptest.NewRecorder()
-				mux.ServeHTTP(rec, httptest.NewRequest("GET", e.path, nil))
+				m.ServeHTTP(rec, httptest.NewRequest("GET", e.path, nil))
 
 				if rec.Code != e.code {
 					t.Errorf("Got unexpected response code: want=%d, got=%d", e.code, rec.Code)
