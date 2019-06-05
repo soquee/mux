@@ -298,10 +298,13 @@ type Option func(*ServeMux)
 // NotFound sets the handler to use when a request does not have a registered
 // route.
 //
-// The handler should set the status code to 404 (Page Not Found).
+// If the provided handler does not set the status code, it is set to 404 (Page
+// Not Found) by default instead of 200.
+// If the provided handler explicitly sets the status by calling
+// "http.ResponseWriter".WriteHeader, that status code is used instead.
 func NotFound(h http.Handler) Option {
 	return func(mux *ServeMux) {
-		mux.notFound = h
+		mux.notFound = notFoundHandler(h)
 	}
 }
 
