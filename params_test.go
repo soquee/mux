@@ -22,31 +22,39 @@ func TestInvalidType(t *testing.T) {
 var paramsTests = [...]struct {
 	routes  []string
 	path    string
-	params  map[string]mux.ParamInfo
+	params  []mux.ParamInfo
 	noMatch bool
 }{
 	0: {
 		routes: []string{"/user/{account uint}/{user int}/{name string}/{f float}"},
 		path:   "/user/123/-11/me/1.123",
-		params: map[string]mux.ParamInfo{
-			"account": mux.ParamInfo{
+		params: []mux.ParamInfo{
+			mux.ParamInfo{
 				Value:  uint64(123),
 				Raw:    "123",
+				Name:   "account",
+				Type:   "uint",
 				Offset: 6,
 			},
-			"user": mux.ParamInfo{
+			mux.ParamInfo{
 				Value:  int64(-11),
 				Raw:    "-11",
+				Name:   "user",
+				Type:   "int",
 				Offset: 10,
 			},
-			"name": mux.ParamInfo{
+			mux.ParamInfo{
 				Value:  "me",
 				Raw:    "me",
+				Name:   "name",
+				Type:   "string",
 				Offset: 14,
 			},
-			"f": mux.ParamInfo{
+			mux.ParamInfo{
 				Value:  float64(1.123),
 				Raw:    "1.123",
+				Name:   "f",
+				Type:   "float",
 				Offset: 17,
 			},
 		},
@@ -59,10 +67,12 @@ var paramsTests = [...]struct {
 	2: {
 		routes: []string{"/one/{other path}"},
 		path:   "/one/two/three",
-		params: map[string]mux.ParamInfo{
-			"other": mux.ParamInfo{
+		params: []mux.ParamInfo{
+			mux.ParamInfo{
 				Value:  "two/three",
 				Raw:    "two/three",
+				Name:   "other",
+				Type:   "path",
 				Offset: 5,
 			},
 		},
@@ -86,17 +96,17 @@ const (
 	notFoundStatusCode = 43
 )
 
-func paramsHandler(t *testing.T, params map[string]mux.ParamInfo) http.HandlerFunc {
+func paramsHandler(t *testing.T, params []mux.ParamInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(testStatusCode)
-		for k, v := range params {
-			pinfo, ok := mux.Param(r, k)
+		for _, v := range params {
+			pinfo, ok := mux.Param(r, v.Name)
 			if !ok {
-				t.Errorf("No such parameter found %q", k)
+				t.Errorf("No such parameter found %q", v.Name)
 				continue
 			}
 			if !reflect.DeepEqual(pinfo, v) {
-				t.Errorf("Param do not match for %q, want=%+v, got=%+v)", k, v, pinfo)
+				t.Errorf("Param do not match: want=%+v, got=%+v)", v, pinfo)
 			}
 		}
 	}

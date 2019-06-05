@@ -23,7 +23,7 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 	// wildcards are a special case that always match the entire remainder of the
 	// path.
 	if n.typ == typWild {
-		r = addValue(r, n.name, path, offset, path)
+		r = addValue(r, n.name, n.typ, path, offset, path)
 		return path, "", r
 	}
 
@@ -35,37 +35,39 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 		}
 		return "", path, r
 	case typString:
-		r = addValue(r, n.name, part, offset, part)
+		r = addValue(r, n.name, n.typ, part, offset, part)
 		return part, remain, r
 	case typUint:
 		v, err := strconv.ParseUint(part, 10, 64)
 		if err != nil {
 			return "", path, r
 		}
-		r = addValue(r, n.name, part, offset, v)
+		r = addValue(r, n.name, n.typ, part, offset, v)
 		return part, remain, r
 	case typInt:
 		v, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
 			return "", path, r
 		}
-		r = addValue(r, n.name, part, offset, v)
+		r = addValue(r, n.name, n.typ, part, offset, v)
 		return part, remain, r
 	case typFloat:
 		v, err := strconv.ParseFloat(part, 64)
 		if err != nil {
 			return "", path, r
 		}
-		r = addValue(r, n.name, part, offset, v)
+		r = addValue(r, n.name, n.typ, part, offset, v)
 		return part, remain, r
 	}
 	panic("unknown type")
 }
 
-func addValue(r *http.Request, name, raw string, offset uint, val interface{}) *http.Request {
+func addValue(r *http.Request, name, typ, raw string, offset uint, val interface{}) *http.Request {
 	pinfo := ParamInfo{
 		Value:  val,
 		Raw:    raw,
+		Name:   name,
+		Type:   typ,
 		Offset: offset,
 	}
 	if name != "" {
