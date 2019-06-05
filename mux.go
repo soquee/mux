@@ -205,11 +205,6 @@ nodeloop:
 // ctxParam is a type used for context keys that contain route parameters.
 type ctxParam string
 
-// Param returns the named route parameter from the requests context.
-func Param(r *http.Request, name string) interface{} {
-	return r.Context().Value(ctxParam(name))
-}
-
 // New allocates and returns a new ServeMux.
 func New(opts ...Option) *ServeMux {
 	mux := &ServeMux{
