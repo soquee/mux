@@ -171,6 +171,32 @@ var registerTests = [...]struct {
 			mux.Handle("GET", "/{b int}/b", failHandler(t)),
 		}
 	}},
+	21: {routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("GET", "/user", failHandler(t)),
+			mux.Handle("POST", "/user", failHandler(t)),
+		}
+	}},
+	22: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("GET", "//user", failHandler(t)),
+		}
+	}},
+	23: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("GET", "/../user", failHandler(t)),
+		}
+	}},
+	24: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("GET", "/./user", failHandler(t)),
+		}
+	}},
+	25: {panics: true, routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{
+			mux.Handle("GET", "test", failHandler(t)),
+		}
+	}},
 }
 
 func TestRegisterRoutes(t *testing.T) {

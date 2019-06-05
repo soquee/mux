@@ -43,14 +43,12 @@ import (
 )
 
 const (
-	emptyPanic  = "invalid empty pattern"
-	panicNoRoot = "all handlers must start with /"
-	typStatic   = "static"
-	typWild     = "path"
-	typString   = "string"
-	typUint     = "uint"
-	typInt      = "int"
-	typFloat    = "float"
+	typStatic = "static"
+	typWild   = "path"
+	typString = "string"
+	typUint   = "uint"
+	typInt    = "int"
+	typFloat  = "float"
 )
 
 // ServeMux is an HTTP request multiplexer.
@@ -257,6 +255,9 @@ func HandleFunc(method, r string, h http.HandlerFunc) Option {
 // If a handler already exists for pattern, Handle panics.
 func Handle(method, r string, h http.Handler) Option {
 	method = strings.ToUpper(method)
+	if rr := cleanPath(r); rr != r {
+		panic(fmt.Sprintf("route %q is unclean, make sure it is rooted and remove any ., .., or //", r))
+	}
 	r = r[1:]
 
 	const (
@@ -351,7 +352,7 @@ func parseParam(pattern string) (name string, typ string) {
 	// We should never be passed an empty pattern.
 	// If we get one, it's a bug.
 	if pattern == "" {
-		panic(emptyPanic)
+		panic("invalid empty pattern")
 	}
 
 	// Static route components aren't patterns and must match exactly.
