@@ -7,9 +7,9 @@ import (
 )
 
 type node struct {
-	name    string
-	typ     string
-	handler http.Handler
+	name     string
+	typ      string
+	handlers map[string]http.Handler
 
 	child []node
 }

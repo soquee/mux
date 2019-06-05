@@ -32,32 +32,32 @@ var registerTests = [...]struct {
 	expect []expected
 }{
 	0: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "", failHandler(t))}
 	}},
 	1: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("user/{uid int}", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "user/{uid int}", failHandler(t))}
 	}},
 	2: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/user", failHandler(t)),
-			mux.Handle("/user", failHandler(t)),
+			mux.Handle("GET", "/user", failHandler(t)),
+			mux.Handle("GET", "/user", failHandler(t)),
 		}
 	}},
 	3: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/{uint}", failHandler(t)),
-			mux.Handle("/{uint}", failHandler(t)),
+			mux.Handle("GET", "/{uint}", failHandler(t)),
+			mux.Handle("GET", "/{uint}", failHandler(t)),
 		}
 	}},
 	4: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/{int}", failHandler(t)),
-			mux.Handle("/{}", failHandler(t)),
+			mux.Handle("GET", "/{int}", failHandler(t)),
+			mux.Handle("GET", "/{}", failHandler(t)),
 		}
 	}},
 	5: {
 		routes: func(t *testing.T) []mux.Option {
-			return []mux.Option{mux.Handle("/{int}", codeHandler(t, 5))}
+			return []mux.Option{mux.Handle("GET", "/{int}", codeHandler(t, 5))}
 		},
 		expect: []expected{
 			{path: "/1", code: 5},
@@ -67,7 +67,7 @@ var registerTests = [...]struct {
 	},
 	6: {
 		routes: func(t *testing.T) []mux.Option {
-			return []mux.Option{mux.Handle("/{u uint}", codeHandler(t, 5))}
+			return []mux.Option{mux.Handle("GET", "/{u uint}", codeHandler(t, 5))}
 		},
 		expect: []expected{
 			{path: "/1", code: 5},
@@ -76,40 +76,40 @@ var registerTests = [...]struct {
 		},
 	},
 	7: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("/{path}/user", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "/{path}/user", failHandler(t))}
 	}},
 	8: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("/{named path}/user", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "/{named path}/user", failHandler(t))}
 	}},
 	9: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/", failHandler(t)),
-			mux.Handle("/", failHandler(t)),
+			mux.Handle("GET", "/", failHandler(t)),
+			mux.Handle("GET", "/", failHandler(t)),
 		}
 	}},
 	10: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("/{badtyp}", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "/{badtyp}", failHandler(t))}
 	}},
 	11: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("/{name badtyp}", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "/{name badtyp}", failHandler(t))}
 	}},
 	12: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/bad/{int}", failHandler(t)),
-			mux.Handle("/bad/{path}", failHandler(t)),
+			mux.Handle("GET", "/bad/{int}", failHandler(t)),
+			mux.Handle("GET", "/bad/{path}", failHandler(t)),
 		}
 	}},
 	13: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/bad/{int}/end", failHandler(t)),
-			mux.Handle("/bad/{path}/end", failHandler(t)),
+			mux.Handle("GET", "/bad/{int}/end", failHandler(t)),
+			mux.Handle("GET", "/bad/{path}/end", failHandler(t)),
 		}
 	}},
 	14: {
 		routes: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.Handle("/good/one", codeHandler(t, 1)),
-				mux.Handle("/good/two", codeHandler(t, 2)),
+				mux.Handle("GET", "/good/one", codeHandler(t, 1)),
+				mux.Handle("GET", "/good/two", codeHandler(t, 2)),
 			}
 		},
 		expect: []expected{
@@ -121,8 +121,8 @@ var registerTests = [...]struct {
 	15: {
 		routes: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.Handle("/a/b", codeHandler(t, 1)),
-				mux.Handle("/a", codeHandler(t, 2)),
+				mux.Handle("GET", "/a/b", codeHandler(t, 1)),
+				mux.Handle("GET", "/a", codeHandler(t, 2)),
 			}
 		},
 		expect: []expected{
@@ -134,8 +134,8 @@ var registerTests = [...]struct {
 	16: {
 		routes: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.Handle("/a", codeHandler(t, 2)),
-				mux.Handle("/a/b", codeHandler(t, 1)),
+				mux.Handle("GET", "/a", codeHandler(t, 2)),
+				mux.Handle("GET", "/a/b", codeHandler(t, 1)),
 			}
 		},
 		expect: []expected{
@@ -146,19 +146,19 @@ var registerTests = [...]struct {
 	},
 	17: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/{uint}", failHandler(t)),
-			mux.Handle("/me", failHandler(t)),
+			mux.Handle("GET", "/{uint}", failHandler(t)),
+			mux.Handle("GET", "/me", failHandler(t)),
 		}
 	}},
 	18: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/{static}", failHandler(t)),
+			mux.Handle("GET", "/{static}", failHandler(t)),
 		}
 	}},
 	19: {
 		routes: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.Handle("/", codeHandler(t, 2)),
+				mux.Handle("GET", "/", codeHandler(t, 2)),
 			}
 		},
 		expect: []expected{
@@ -167,8 +167,8 @@ var registerTests = [...]struct {
 	},
 	20: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
-			mux.Handle("/{a int}/a", failHandler(t)),
-			mux.Handle("/{b int}/b", failHandler(t)),
+			mux.Handle("GET", "/{a int}/a", failHandler(t)),
+			mux.Handle("GET", "/{b int}/b", failHandler(t)),
 		}
 	}},
 }

@@ -123,7 +123,7 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 	path := r.URL.Path
 
 	// CONNECT requests are not canonicalized
-	if r.Method != "CONNECT" {
+	if r.Method != http.MethodConnect {
 		// All other requests have any port stripped and path cleaned
 		// before passing to mux.handler.
 		host = stripHostPort(r.Host)
@@ -139,10 +139,12 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 	node := &mux.node
 	path = strings.TrimPrefix(path, "/")
 	if path == "" {
-		if node.handler == nil {
+		h, ok := node.handlers[r.Method]
+		if !ok {
+			// TODO: method not supported vs not found config
 			return mux.notFound, r
 		}
-		return node.handler, r
+		return h, r
 	}
 
 	offset := uint(1)
@@ -163,10 +165,12 @@ nodeloop:
 			// The variable route matched and it's the last thing in the path, so we
 			// have our route:
 			if remain == "" {
-				if node.child[0].handler == nil {
+				h, ok := node.child[0].handlers[r.Method]
+				if !ok {
+					// TODO: method not supported vs not found config
 					return mux.notFound, r
 				}
-				return node.child[0].handler, r
+				return h, r
 			}
 			node = &node.child[0]
 			path = remain
@@ -187,10 +191,12 @@ nodeloop:
 			// The child matched and was the last thing in the path, so we have our
 			// route:
 			if remain == "" {
-				if child.handler == nil {
+				h, ok := child.handlers[r.Method]
+				if !ok {
+					// TODO: method not supported vs not found config
 					return mux.notFound, r
 				}
-				return child.handler, r
+				return h, r
 			}
 
 			// The child matched but was not the last one, move on to the next match.
@@ -213,9 +219,9 @@ type ctxParam string
 func New(opts ...Option) *ServeMux {
 	mux := &ServeMux{
 		node: node{
-			name:    "/",
-			typ:     typStatic,
-			handler: nil,
+			name:     "/",
+			typ:      typStatic,
+			handlers: make(map[string]http.Handler),
 		},
 		notFound: http.HandlerFunc(http.NotFound),
 	}
@@ -243,20 +249,18 @@ func NotFound(h http.Handler) Option {
 
 // Handle registers the handler for the given pattern.
 // If a handler already exists for pattern, Handle panics.
-func HandleFunc(r string, h http.HandlerFunc) Option {
-	return Handle(r, h)
+func HandleFunc(method, r string, h http.HandlerFunc) Option {
+	return Handle(method, r, h)
 }
 
 // Handle registers the handler for the given pattern.
 // If a handler already exists for pattern, Handle panics.
-func Handle(r string, h http.Handler) Option {
-	if !strings.HasPrefix(r, "/") {
-		panic(panicNoRoot)
-	}
+func Handle(method, r string, h http.Handler) Option {
+	method = strings.ToUpper(method)
 	r = r[1:]
 
 	const (
-		alreadyRegistered = "route already registered for /%s"
+		alreadyRegistered = "route already registered for %s /%s"
 	)
 
 	return func(mux *ServeMux) {
@@ -265,10 +269,10 @@ func Handle(r string, h http.Handler) Option {
 		// If we're registering a root handler
 		if r == "" {
 			// If it exists already
-			if pointer.handler != nil {
-				panic(fmt.Sprintf(alreadyRegistered, r))
+			if _, ok := pointer.handlers[method]; ok {
+				panic(fmt.Sprintf(alreadyRegistered, method, r))
 			}
-			pointer.handler = h
+			pointer.handlers[method] = h
 			return
 		}
 
@@ -302,13 +306,13 @@ func Handle(r string, h http.Handler) Option {
 					if remain == "" {
 						// If this is the path we want to register and no handler has been
 						// registered for it, add one:
-						if child.handler == nil {
-							pointer.child[i].handler = h
+						if _, ok := child.handlers[method]; !ok {
+							pointer.child[i].handlers[method] = h
 							continue pathloop
 						} else {
 							// If one already exists and this is the path we were trying to
 							// register, panic.
-							panic(fmt.Sprintf(alreadyRegistered, r))
+							panic(fmt.Sprintf(alreadyRegistered, method, r))
 						}
 					}
 
@@ -319,11 +323,12 @@ func Handle(r string, h http.Handler) Option {
 
 			// Not found at his level. Append new node.
 			n := node{
-				name: name,
-				typ:  typ,
+				name:     name,
+				typ:      typ,
+				handlers: make(map[string]http.Handler),
 			}
 			if remain == "" {
-				n.handler = h
+				n.handlers[method] = h
 			}
 
 			pointer.child = append(pointer.child, n)

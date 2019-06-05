@@ -16,7 +16,7 @@ func TestInvalidType(t *testing.T) {
 			t.Errorf("Expected an invalid type to cause a panic")
 		}
 	}()
-	mux.New(mux.Handle("/{badtype}", failHandler(t)))
+	mux.New(mux.Handle("GET", "/{badtype}", failHandler(t)))
 }
 
 var paramsTests = [...]struct {
@@ -117,7 +117,7 @@ func TestParams(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			var opts []mux.Option
 			for _, route := range tc.routes {
-				opts = append(opts, mux.HandleFunc(route, paramsHandler(t, tc.params)))
+				opts = append(opts, mux.HandleFunc("GET", route, paramsHandler(t, tc.params)))
 			}
 			opts = append(opts, mux.NotFound(codeHandler(t, notFoundStatusCode)))
 
