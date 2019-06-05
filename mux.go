@@ -145,12 +145,15 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 		return node.handler, r
 	}
 
+	offset := uint(1)
+
 nodeloop:
 	for node != nil {
 		// If this is a variable route,
 		if len(node.child) == 1 && node.child[0].typ != typStatic {
 			var part, remain string
-			part, remain, r = node.child[0].match(path, r)
+			part, remain, r = node.child[0].match(path, offset, r)
+			offset += uint(len(part)) + 1
 
 			// If the type doesn't match, we're done.
 			if part == "" {
@@ -173,7 +176,8 @@ nodeloop:
 		// If this is a static route
 		for _, child := range node.child {
 			var part, remain string
-			part, remain, r = child.match(path, r)
+			part, remain, r = child.match(path, offset, r)
+			offset += uint(len(part)) + 1
 			// The child did not match, so check the next.
 			if part == "" {
 				path = remain

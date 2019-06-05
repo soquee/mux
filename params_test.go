@@ -22,17 +22,33 @@ func TestInvalidType(t *testing.T) {
 var paramsTests = [...]struct {
 	routes  []string
 	path    string
-	params  map[string]interface{}
+	params  map[string]mux.ParamInfo
 	noMatch bool
 }{
 	0: {
 		routes: []string{"/user/{account uint}/{user int}/{name string}/{f float}"},
 		path:   "/user/123/-11/me/1.123",
-		params: map[string]interface{}{
-			"account": uint64(123),
-			"user":    int64(-11),
-			"name":    "me",
-			"f":       float64(1.123),
+		params: map[string]mux.ParamInfo{
+			"account": mux.ParamInfo{
+				Value:  uint64(123),
+				Raw:    "123",
+				Offset: 6,
+			},
+			"user": mux.ParamInfo{
+				Value:  int64(-11),
+				Raw:    "-11",
+				Offset: 10,
+			},
+			"name": mux.ParamInfo{
+				Value:  "me",
+				Raw:    "me",
+				Offset: 14,
+			},
+			"f": mux.ParamInfo{
+				Value:  float64(1.123),
+				Raw:    "1.123",
+				Offset: 17,
+			},
 		},
 	},
 	1: {
@@ -43,8 +59,12 @@ var paramsTests = [...]struct {
 	2: {
 		routes: []string{"/one/{other path}"},
 		path:   "/one/two/three",
-		params: map[string]interface{}{
-			"other": "two/three",
+		params: map[string]mux.ParamInfo{
+			"other": mux.ParamInfo{
+				Value:  "two/three",
+				Raw:    "two/three",
+				Offset: 5,
+			},
 		},
 	},
 	3: {
@@ -66,13 +86,17 @@ const (
 	notFoundStatusCode = 43
 )
 
-func paramsHandler(t *testing.T, params map[string]interface{}) http.HandlerFunc {
+func paramsHandler(t *testing.T, params map[string]mux.ParamInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(testStatusCode)
 		for k, v := range params {
-			val := mux.Param(r, k)
-			if !reflect.DeepEqual(val, v) {
-				t.Errorf("Params has wrong type for %[1]q, want=%[2]T(%[2]v), got=%[3]T(%[3]v)", k, v, val)
+			pinfo, ok := mux.Param(r, k)
+			if !ok {
+				t.Errorf("No such parameter found %q", k)
+				continue
+			}
+			if !reflect.DeepEqual(pinfo, v) {
+				t.Errorf("Param do not match for %q, want=%+v, got=%+v)", k, v, pinfo)
 			}
 		}
 	}
