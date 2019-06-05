@@ -227,7 +227,6 @@ func Param(r *http.Request, name string) interface{} {
 	return r.Context().Value(ctxParam(name))
 }
 
-// TODO: take a context and put parameters into it.
 func (n *node) match(path string, r *http.Request) (part string, remain string, req *http.Request) {
 	// Nil nodes never match.
 	if n == nil {
