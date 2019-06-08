@@ -2,6 +2,7 @@ package mux
 
 import (
 	"net/http"
+	"strings"
 )
 
 // defCodeWriter is an http.ResponseWriter that writes the given status code by
@@ -32,4 +33,15 @@ func notFoundHandler(h http.Handler) http.HandlerFunc {
 			code:           http.StatusNotFound,
 		}, r)
 	}
+}
+
+func defOptions(node node) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var verbs []string
+		for v, _ := range node.handlers {
+			verbs = append(verbs, v)
+		}
+		w.Header().Add("Allow", strings.Join(verbs, ","))
+		w.Write(nil)
+	})
 }

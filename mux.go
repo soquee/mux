@@ -58,6 +58,24 @@ const (
 type ServeMux struct {
 	node
 	notFound http.Handler
+	options  func(node) http.Handler
+}
+
+// New allocates and returns a new ServeMux.
+func New(opts ...Option) *ServeMux {
+	mux := &ServeMux{
+		node: node{
+			name:     "/",
+			typ:      typStatic,
+			handlers: make(map[string]http.Handler),
+		},
+		notFound: http.HandlerFunc(http.NotFound),
+		options:  defOptions,
+	}
+	for _, o := range opts {
+		o(mux)
+	}
+	return mux
 }
 
 // ServeHTTP dispatches the request to the handler whose pattern most closely
@@ -116,15 +134,14 @@ func (mux *ServeMux) Handler(r *http.Request) (http.Handler, *http.Request) {
 func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 	// TODO: Add /tree to /tree/ redirect option and apply here.
 	// TODO: use host
-	host := r.Host
-	_ = host
+	//host := r.URL.Host
 	path := r.URL.Path
 
 	// CONNECT requests are not canonicalized
 	if r.Method != http.MethodConnect {
 		// All other requests have any port stripped and path cleaned
 		// before passing to mux.handler.
-		host = stripHostPort(r.Host)
+		//host = stripHostPort(r.Host)
 		path = cleanPath(r.URL.Path)
 		if path != r.URL.Path {
 			url := *r.URL
@@ -136,10 +153,15 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 	// TODO: add host based matching and check it here.
 	node := &mux.node
 	path = strings.TrimPrefix(path, "/")
+
+	// Requests for /
 	if path == "" {
-		h, ok := node.handlers[r.Method]
+		h, ok := mux.node.handlers[r.Method]
 		if !ok {
 			// TODO: method not supported vs not found config
+			if r.Method == http.MethodOptions && mux.options != nil {
+				return mux.options(mux.node), r
+			}
 			return mux.notFound, r
 		}
 		return h, r
@@ -149,7 +171,7 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 
 nodeloop:
 	for node != nil {
-		// If this is a variable route,
+		// If this is a variable route
 		if len(node.child) == 1 && node.child[0].typ != typStatic {
 			var part, remain string
 			part, remain, r = node.child[0].match(path, offset, r)
@@ -166,6 +188,9 @@ nodeloop:
 				h, ok := node.child[0].handlers[r.Method]
 				if !ok {
 					// TODO: method not supported vs not found config
+					if r.Method == http.MethodOptions && mux.options != nil {
+						return mux.options(node.child[0]), r
+					}
 					return mux.notFound, r
 				}
 				return h, r
@@ -192,6 +217,9 @@ nodeloop:
 				h, ok := child.handlers[r.Method]
 				if !ok {
 					// TODO: method not supported vs not found config
+					if r.Method == http.MethodOptions && mux.options != nil {
+						return mux.options(child), r
+					}
 					return mux.notFound, r
 				}
 				return h, r
@@ -210,25 +238,6 @@ nodeloop:
 	return mux.notFound, r
 }
 
-// ctxParam is a type used for context keys that contain route parameters.
-type ctxParam string
-
-// New allocates and returns a new ServeMux.
-func New(opts ...Option) *ServeMux {
-	mux := &ServeMux{
-		node: node{
-			name:     "/",
-			typ:      typStatic,
-			handlers: make(map[string]http.Handler),
-		},
-		notFound: http.HandlerFunc(http.NotFound),
-	}
-	for _, o := range opts {
-		o(mux)
-	}
-	return mux
-}
-
 // Option is used to configure a ServeMux.
 type Option func(*ServeMux)
 
@@ -242,6 +251,28 @@ type Option func(*ServeMux)
 func NotFound(h http.Handler) Option {
 	return func(mux *ServeMux) {
 		mux.notFound = notFoundHandler(h)
+	}
+}
+
+// The ServeMux handles OPTIONS requests by default. If you do not want this
+// behavior, set f to "nil".
+//
+// Registering handlers for OPTIONS requests on a specific path always overrides
+// the default handler.
+func DefaultOptions(f func([]string) http.Handler) Option {
+	return func(mux *ServeMux) {
+		if f == nil {
+			mux.options = nil
+			return
+		}
+
+		mux.options = func(n node) http.Handler {
+			var verbs []string
+			for v, _ := range n.handlers {
+				verbs = append(verbs, v)
+			}
+			return f(verbs)
+		}
 	}
 }
 

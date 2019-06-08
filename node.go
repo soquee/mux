@@ -63,14 +63,14 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 }
 
 func addValue(r *http.Request, name, typ, raw string, offset uint, val interface{}) *http.Request {
-	pinfo := ParamInfo{
-		Value:  val,
-		Raw:    raw,
-		Name:   name,
-		Type:   typ,
-		Offset: offset,
-	}
 	if name != "" {
+		pinfo := ParamInfo{
+			Value:  val,
+			Raw:    raw,
+			Name:   name,
+			Type:   typ,
+			Offset: offset,
+		}
 		return r.WithContext(context.WithValue(r.Context(), ctxParam(name), pinfo))
 	}
 	return r

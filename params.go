@@ -4,6 +4,9 @@ import (
 	"net/http"
 )
 
+// ctxParam is a type used for context keys that contain route parameters.
+type ctxParam string
+
 // ParamInfo represents a route parameter and related metadata.
 type ParamInfo struct {
 	// The parsed value of the parameter (for example int64(10))
