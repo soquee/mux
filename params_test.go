@@ -10,20 +10,12 @@ import (
 	"code.soquee.net/mux"
 )
 
-func TestInvalidType(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Expected an invalid type to cause a panic")
-		}
-	}()
-	mux.New(mux.Handle("GET", "/{badtype}", failHandler(t)))
-}
-
 var paramsTests = [...]struct {
 	routes  []string
 	path    string
 	params  []mux.ParamInfo
 	noMatch bool
+	panics  bool
 }{
 	0: {
 		routes: []string{"/user/{account uint}/{user int}/{name string}/{f float}"},
@@ -86,6 +78,22 @@ var paramsTests = [...]struct {
 		routes: []string{"/{}"},
 		path:   "/b",
 	},
+	5: {
+		routes: []string{"/{badtype}"},
+		panics: true,
+	},
+	6: {
+		routes: []string{"not/rooted"},
+		panics: true,
+	},
+	7: {
+		routes: []string{"unclean/./path"},
+		panics: true,
+	},
+	8: {
+		routes: []string{"unclean/../path"},
+		panics: true,
+	},
 }
 
 // Used as an HTTP status code code to make sure the test path matches at
@@ -115,6 +123,14 @@ func paramsHandler(t *testing.T, params []mux.ParamInfo) http.HandlerFunc {
 func TestParams(t *testing.T) {
 	for i, tc := range paramsTests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			if tc.panics {
+				defer func() {
+					if r := recover(); r == nil {
+						t.Errorf("Expected test to panic")
+					}
+				}()
+			}
+
 			var opts []mux.Option
 			for _, route := range tc.routes {
 				opts = append(opts, mux.HandleFunc("GET", route, paramsHandler(t, tc.params)))
