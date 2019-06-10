@@ -42,6 +42,7 @@ var handlerTests = [...]struct {
 		opts: func(t *testing.T) []mux.Option {
 			return []mux.Option{
 				mux.NotFound(successHandler(true, false)),
+				mux.Options(nil),
 			}
 		},
 		code: testCode,
@@ -50,6 +51,7 @@ var handlerTests = [...]struct {
 		opts: func(t *testing.T) []mux.Option {
 			return []mux.Option{
 				mux.NotFound(successHandler(true, true)),
+				mux.Options(nil),
 			}
 		},
 		code:     testCode,
@@ -59,6 +61,7 @@ var handlerTests = [...]struct {
 		opts: func(t *testing.T) []mux.Option {
 			return []mux.Option{
 				mux.NotFound(successHandler(false, true)),
+				mux.Options(nil),
 			}
 		},
 		code:     http.StatusNotFound,
@@ -118,6 +121,52 @@ var handlerTests = [...]struct {
 			}
 		},
 		method: http.MethodOptions,
+		code:   testCode,
+	},
+	8: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Handle(http.MethodGet, "/", failHandler(t)),
+				mux.Options(nil),
+			}
+		},
+		method:   http.MethodPost,
+		code:     http.StatusMethodNotAllowed,
+		respBody: http.StatusText(http.StatusMethodNotAllowed) + "\n",
+	},
+	9: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Handle(http.MethodGet, "/", failHandler(t)),
+				mux.Options(nil),
+				mux.MethodNotAllowed(nil),
+				mux.NotFound(successHandler(true, false)),
+			}
+		},
+		method: http.MethodPost,
+		code:   testCode,
+	},
+	10: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.MethodNotAllowed(failHandler(t)),
+				mux.Options(nil),
+				mux.NotFound(successHandler(false, true)),
+			}
+		},
+		method:   http.MethodPost,
+		code:     http.StatusNotFound,
+		respBody: testBody,
+	},
+	11: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.MethodNotAllowed(nil),
+				mux.Options(nil),
+				mux.NotFound(successHandler(true, false)),
+			}
+		},
+		method: http.MethodPost,
 		code:   testCode,
 	},
 }

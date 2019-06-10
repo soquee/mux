@@ -110,6 +110,7 @@ var registerTests = [...]struct {
 			return []mux.Option{
 				mux.Handle("GET", "/good/one", codeHandler(t, 1)),
 				mux.Handle("GET", "/good/two", codeHandler(t, 2)),
+				mux.MethodNotAllowed(nil),
 			}
 		},
 		expect: []expected{

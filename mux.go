@@ -67,8 +67,9 @@ const (
 // URL.
 type ServeMux struct {
 	node
-	notFound http.Handler
-	options  func(node) http.Handler
+	notFound         http.Handler
+	methodNotAllowed http.Handler
+	options          func(node) http.Handler
 }
 
 // New allocates and returns a new ServeMux.
@@ -80,7 +81,10 @@ func New(opts ...Option) *ServeMux {
 			handlers: make(map[string]http.Handler),
 		},
 		notFound: http.HandlerFunc(http.NotFound),
-		options:  defOptions,
+		methodNotAllowed: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		}),
+		options: defOptions,
 	}
 	for _, o := range opts {
 		o(mux)
@@ -132,9 +136,11 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 	if path == "" {
 		h, ok := mux.node.handlers[r.Method]
 		if !ok {
-			// TODO: method not supported vs not found config
-			if r.Method == http.MethodOptions && mux.options != nil {
+			switch {
+			case r.Method == http.MethodOptions && mux.options != nil:
 				return mux.options(mux.node), r
+			case mux.methodNotAllowed != nil && (mux.options != nil || len(mux.node.handlers) > 0):
+				return mux.methodNotAllowed, r
 			}
 			return mux.notFound, r
 		}
@@ -161,9 +167,11 @@ nodeloop:
 			if remain == "" {
 				h, ok := node.child[0].handlers[r.Method]
 				if !ok {
-					// TODO: method not supported vs not found config
-					if r.Method == http.MethodOptions && mux.options != nil {
+					switch {
+					case r.Method == http.MethodOptions && mux.options != nil:
 						return mux.options(node.child[0]), r
+					case mux.methodNotAllowed != nil && (mux.options != nil || len(mux.node.handlers) > 0):
+						return mux.methodNotAllowed, r
 					}
 					return mux.notFound, r
 				}
@@ -190,9 +198,11 @@ nodeloop:
 			if remain == "" {
 				h, ok := child.handlers[r.Method]
 				if !ok {
-					// TODO: method not supported vs not found config
-					if r.Method == http.MethodOptions && mux.options != nil {
+					switch {
+					case r.Method == http.MethodOptions && mux.options != nil:
 						return mux.options(child), r
+					case mux.methodNotAllowed != nil && (mux.options != nil || len(mux.node.handlers) > 0):
+						return mux.methodNotAllowed, r
 					}
 					return mux.notFound, r
 				}
@@ -247,6 +257,16 @@ func Options(f func([]string) http.Handler) Option {
 			}
 			return f(verbs)
 		}
+	}
+}
+
+// MethodNotAllowed sets the default handler to call when a path is matched to a
+// route, but there is no handler registered for the specific method.
+//
+// By default, http.Error with http.StatusMethodNotAllowed is used.
+func MethodNotAllowed(h http.Handler) Option {
+	return func(mux *ServeMux) {
+		mux.methodNotAllowed = h
 	}
 }
 
