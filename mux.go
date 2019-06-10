@@ -47,7 +47,6 @@ package mux // import "code.soquee.net/mux"
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"path"
 	"strings"
@@ -96,36 +95,6 @@ func (mux *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.ServeHTTP(w, newReq)
 }
 
-// stripHostPort returns h without any trailing ":<port>".
-func stripHostPort(h string) string {
-	// If no port on host, return unchanged
-	if strings.IndexByte(h, ':') == -1 {
-		return h
-	}
-	host, _, err := net.SplitHostPort(h)
-	if err != nil {
-		return h // on error, return unchanged
-	}
-	return host
-}
-
-// Return the canonical path for p, eliminating . and .. elements.
-func cleanPath(p string) string {
-	if p == "" {
-		return "/"
-	}
-	if p[0] != '/' {
-		p = "/" + p
-	}
-	np := path.Clean(p)
-	// path.Clean removes trailing slash except for root;
-	// put the trailing slash back if necessary.
-	if p[len(p)-1] == '/' && np != "/" {
-		np += "/"
-	}
-	return np
-}
-
 // Handler returns the handler to use for the given request, consulting
 // r.URL.Path.
 // It always returns a non-nil handler.
@@ -150,9 +119,6 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 
 	// CONNECT requests are not canonicalized
 	if r.Method != http.MethodConnect {
-		// All other requests have any port stripped and path cleaned
-		// before passing to mux.handler.
-		//host = stripHostPort(r.Host)
 		path = cleanPath(r.URL.Path)
 		if path != r.URL.Path {
 			url := *r.URL
@@ -423,10 +389,36 @@ func parseParam(pattern string) (name string, typ string) {
 	}
 	panic(fmt.Sprintf("invalid type: %q", typ))
 }
+
 func nextPart(path string) (string, string) {
 	idx := strings.IndexByte(path, '/')
 	if idx == -1 {
 		return path, ""
 	}
 	return path[:idx], path[idx+1:]
+}
+
+// Code below this line was taken from the Go source and is used under the terms
+// of Go's BSD license (see the file LICENSE-GO). Its copyright statement is
+// below:
+//
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Return the canonical path for p, eliminating . and .. elements.
+func cleanPath(p string) string {
+	if p == "" {
+		return "/"
+	}
+	if p[0] != '/' {
+		p = "/" + p
+	}
+	np := path.Clean(p)
+	// path.Clean removes trailing slash except for root;
+	// put the trailing slash back if necessary.
+	if p[len(p)-1] == '/' && np != "/" {
+		np += "/"
+	}
+	return np
 }
