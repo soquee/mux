@@ -13,7 +13,22 @@ import (
 
 const (
 	testBody = "Test"
+	testCode = 123
 )
+
+func successHandler(writeCode, writeBody bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if writeCode {
+			w.WriteHeader(testCode)
+		}
+		if writeBody {
+			_, err := w.Write([]byte(testBody))
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
 
 var handlerTests = [...]struct {
 	opts     func(t *testing.T) []mux.Option
@@ -26,37 +41,24 @@ var handlerTests = [...]struct {
 	0: {
 		opts: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusPaymentRequired)
-				})),
+				mux.NotFound(successHandler(true, false)),
 			}
 		},
-		code: http.StatusPaymentRequired,
+		code: testCode,
 	},
 	1: {
 		opts: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusMultiStatus)
-					_, err := w.Write([]byte(testBody))
-					if err != nil {
-						panic(err)
-					}
-				})),
+				mux.NotFound(successHandler(true, true)),
 			}
 		},
-		code:     http.StatusMultiStatus,
+		code:     testCode,
 		respBody: testBody,
 	},
 	2: {
 		opts: func(t *testing.T) []mux.Option {
 			return []mux.Option{
-				mux.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					_, err := w.Write([]byte(testBody))
-					if err != nil {
-						panic(err)
-					}
-				})),
+				mux.NotFound(successHandler(false, true)),
 			}
 		},
 		code:     http.StatusNotFound,
