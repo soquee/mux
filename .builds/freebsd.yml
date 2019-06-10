@@ -1,0 +1,18 @@
+image: freebsd/latest
+packages:
+  - go
+sources:
+  - https://git.sr.ht/~samwhited/mux
+tasks:
+  - info: |
+      go version
+      go env
+  - test: |
+      cd mux/
+      go test -v ./...
+      gofmt -s -l . && [ -z "$(gofmt -s -l .)" ]
+  - lint: |
+      cd mux/
+      go vet ./...
+      # This will modify go.mod, so do it last.
+      go run golang.org/x/lint/golint -set_exit_status ./...
