@@ -169,6 +169,53 @@ var handlerTests = [...]struct {
 		method: http.MethodPost,
 		code:   testCode,
 	},
+	12: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{}
+		},
+		method:   http.MethodGet,
+		req:      "//test",
+		code:     http.StatusPermanentRedirect,
+		respBody: "<a href=\"/test\">Permanent Redirect</a>.\n\n",
+	},
+	13: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Handle(http.MethodGet, "/{}/", failHandler(t)),
+			}
+		},
+		method: http.MethodOptions,
+		req:    "/test/",
+		code:   http.StatusOK,
+		header: map[string][]string{
+			"Allow": []string{"GET"},
+		},
+	},
+	14: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Handle(http.MethodGet, "/{}", failHandler(t)),
+				mux.Options(nil),
+				mux.MethodNotAllowed(successHandler(true, false)),
+			}
+		},
+		method: http.MethodOptions,
+		req:    "/test",
+		code:   testCode,
+	},
+	15: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Handle(http.MethodGet, "/{}", failHandler(t)),
+				mux.Options(nil),
+				mux.MethodNotAllowed(nil),
+				mux.NotFound(successHandler(true, false)),
+			}
+		},
+		method: http.MethodOptions,
+		req:    "/test",
+		code:   testCode,
+	},
 }
 
 func TestHandlers(t *testing.T) {

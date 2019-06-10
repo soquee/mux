@@ -170,7 +170,7 @@ nodeloop:
 					switch {
 					case r.Method == http.MethodOptions && mux.options != nil:
 						return mux.options(node.child[0]), r
-					case mux.methodNotAllowed != nil && (mux.options != nil || len(mux.node.handlers) > 0):
+					case mux.methodNotAllowed != nil && (mux.options != nil || len(node.child[0].handlers) > 0):
 						return mux.methodNotAllowed, r
 					}
 					return mux.notFound, r
@@ -373,12 +373,6 @@ func parseParam(pattern string) (name string, typ string) {
 	// Be careful when refactoring this function.
 	// that something is missing re-ordering these checks may result in panics.
 	// Eventually we should build a proper tokenizer for this.
-
-	// We should never be passed an empty pattern.
-	// If we get one, it's a bug.
-	if pattern == "" {
-		panic("invalid empty pattern")
-	}
 
 	// Static route components aren't patterns and must match exactly.
 	if pattern[0] != '{' || pattern[len(pattern)-1] != '}' {

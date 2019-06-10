@@ -149,3 +149,10 @@ func TestParams(t *testing.T) {
 		})
 	}
 }
+
+func TestParamNotFound(t *testing.T) {
+	pinfo, ok := mux.Param(httptest.NewRequest("GET", "/", nil), "badparam")
+	if ok {
+		t.Errorf("Did not expect to find param but got %+v", pinfo)
+	}
+}
