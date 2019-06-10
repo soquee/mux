@@ -99,7 +99,7 @@ func (mux *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // r.URL.Path.
 // It always returns a non-nil handler.
 //
-// The path and host are used unchanged for CONNECT requests.
+// The path used is unchanged for CONNECT requests.
 //
 // If there is no registered handler that applies to the request, Handler
 // returns a ``page not found'' handler and an empty pattern.
@@ -113,8 +113,6 @@ func (mux *ServeMux) Handler(r *http.Request) (http.Handler, *http.Request) {
 // with parameters set on the context.
 func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 	// TODO: Add /tree to /tree/ redirect option and apply here.
-	// TODO: use host
-	//host := r.URL.Host
 	path := r.URL.Path
 
 	// CONNECT requests are not canonicalized
@@ -127,7 +125,6 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 		}
 	}
 
-	// TODO: add host based matching and check it here.
 	node := &mux.node
 	path = strings.TrimPrefix(path, "/")
 
