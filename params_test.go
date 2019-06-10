@@ -21,28 +21,28 @@ var paramsTests = [...]struct {
 		routes: []string{"/user/{account uint}/{user int}/{name string}/{f float}"},
 		path:   "/user/123/-11/me/1.123",
 		params: []mux.ParamInfo{
-			mux.ParamInfo{
+			{
 				Value:  uint64(123),
 				Raw:    "123",
 				Name:   "account",
 				Type:   "uint",
 				Offset: 6,
 			},
-			mux.ParamInfo{
+			{
 				Value:  int64(-11),
 				Raw:    "-11",
 				Name:   "user",
 				Type:   "int",
 				Offset: 10,
 			},
-			mux.ParamInfo{
+			{
 				Value:  "me",
 				Raw:    "me",
 				Name:   "name",
 				Type:   "string",
 				Offset: 14,
 			},
-			mux.ParamInfo{
+			{
 				Value:  float64(1.123),
 				Raw:    "1.123",
 				Name:   "f",
@@ -60,7 +60,7 @@ var paramsTests = [...]struct {
 		routes: []string{"/one/{other path}"},
 		path:   "/one/two/three",
 		params: []mux.ParamInfo{
-			mux.ParamInfo{
+			{
 				Value:  "two/three",
 				Raw:    "two/three",
 				Name:   "other",

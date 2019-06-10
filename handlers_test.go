@@ -78,14 +78,14 @@ var handlerTests = [...]struct {
 		method: http.MethodOptions,
 		code:   http.StatusOK,
 		header: map[string][]string{
-			"Allow": []string{"GET,POST"},
+			"Allow": {"GET,POST"},
 		},
 	},
 	4: {
 		method: http.MethodOptions,
 		code:   http.StatusOK,
 		header: map[string][]string{
-			"Allow": []string{""},
+			"Allow": {""},
 		},
 	},
 	5: {
@@ -188,7 +188,7 @@ var handlerTests = [...]struct {
 		req:    "/test/",
 		code:   http.StatusOK,
 		header: map[string][]string{
-			"Allow": []string{"GET"},
+			"Allow": {"GET"},
 		},
 	},
 	14: {
@@ -239,7 +239,7 @@ func TestHandlers(t *testing.T) {
 			if s := rec.Body.String(); s != tc.respBody {
 				t.Errorf("Unexpected response body: want=%q, got=%q", tc.respBody, s)
 			}
-			for k, _ := range tc.header {
+			for k := range tc.header {
 				var v, vv string
 				if k == "Allow" {
 					// Sort "Allow" headers as a special case so that we don't have to do
