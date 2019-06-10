@@ -85,6 +85,41 @@ var handlerTests = [...]struct {
 			"Allow": []string{""},
 		},
 	},
+	5: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Options(func([]string) http.Handler {
+					return successHandler(true, true)
+				}),
+			}
+		},
+		method:   http.MethodOptions,
+		code:     testCode,
+		respBody: testBody,
+	},
+	6: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Options(nil),
+				mux.NotFound(successHandler(false, true)),
+			}
+		},
+		method:   http.MethodOptions,
+		code:     http.StatusNotFound,
+		respBody: testBody,
+	},
+	7: {
+		opts: func(t *testing.T) []mux.Option {
+			return []mux.Option{
+				mux.Options(func([]string) http.Handler {
+					return failHandler(t)
+				}),
+				mux.Handle(http.MethodOptions, "/", successHandler(true, false)),
+			}
+		},
+		method: http.MethodOptions,
+		code:   testCode,
+	},
 }
 
 func TestHandlers(t *testing.T) {

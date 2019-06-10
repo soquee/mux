@@ -228,12 +228,12 @@ func NotFound(h http.Handler) Option {
 	}
 }
 
-// The ServeMux handles OPTIONS requests by default. If you do not want this
-// behavior, set f to "nil".
+// Options changes the ServeMux's default OPTIONS request handling behavior.
+// If you do not want options handling by default, set f to "nil".
 //
 // Registering handlers for OPTIONS requests on a specific path always overrides
 // the default handler.
-func DefaultOptions(f func([]string) http.Handler) Option {
+func Options(f func([]string) http.Handler) Option {
 	return func(mux *ServeMux) {
 		if f == nil {
 			mux.options = nil
