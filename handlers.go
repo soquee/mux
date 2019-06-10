@@ -38,7 +38,7 @@ func notFoundHandler(h http.Handler) http.HandlerFunc {
 func defOptions(node node) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var verbs []string
-		for v, _ := range node.handlers {
+		for v := range node.handlers {
 			verbs = append(verbs, v)
 		}
 		w.Header().Add("Allow", strings.Join(verbs, ","))

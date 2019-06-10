@@ -242,7 +242,7 @@ func Options(f func([]string) http.Handler) Option {
 
 		mux.options = func(n node) http.Handler {
 			var verbs []string
-			for v, _ := range n.handlers {
+			for v := range n.handlers {
 				verbs = append(verbs, v)
 			}
 			return f(verbs)
@@ -250,7 +250,7 @@ func Options(f func([]string) http.Handler) Option {
 	}
 }
 
-// Handle registers the handler for the given pattern.
+// HandleFunc registers the handler for the given pattern.
 // If a handler already exists for pattern, Handle panics.
 func HandleFunc(method, r string, h http.HandlerFunc) Option {
 	return Handle(method, r, h)
