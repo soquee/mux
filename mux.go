@@ -66,7 +66,7 @@ const (
 // patterns and calls the handler for the pattern that most closely matches the
 // URL.
 type ServeMux struct {
-	node
+	node             node
 	notFound         http.Handler
 	methodNotAllowed http.Handler
 	options          func(node) http.Handler
