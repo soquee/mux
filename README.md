@@ -1,6 +1,8 @@
 # mux
 
-[![GoDoc](https://godoc.org/code.soquee.net/mux?status.svg)](https://godoc.org/code.soquee.net/mux)
+[![GoDoc](https://code.soquee.net/status.svg)](https://godoc.org/code.soquee.net/mux)
+[![todo.sr.ht](https://code.soquee.net/todo.svg)](https://todo.sr.ht/~samwhited/soquee)
+
 
 Package **`mux`** is a Go HTTP multiplexer that provided typed route parameters.
 
