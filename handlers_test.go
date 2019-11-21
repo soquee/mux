@@ -30,6 +30,12 @@ func successHandler(writeCode, writeBody bool) http.HandlerFunc {
 	}
 }
 
+func panicHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		panic("called panic handler with route: " + r.URL.String())
+	}
+}
+
 var handlerTests = [...]struct {
 	opts     func(t *testing.T) []mux.Option
 	method   string
@@ -261,4 +267,37 @@ func TestHandlers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCanonicalization(t *testing.T) {
+	m := mux.New(
+		mux.Handle(http.MethodConnect, "/profile/{username string}/", http.NotFoundHandler()),
+		mux.Handle(http.MethodGet, "/users/{username string}/", panicHandler()),
+	)
+
+	// We expect GET methods to be canonicalized (eg. if there is no '/' at the
+	// beginning, the path will be rooted in a redirect).
+	t.Run(http.MethodGet, func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/users/me/", nil)
+		req.URL.Path = req.URL.Path[1:]
+		h, req := m.Handler(req)
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, req)
+		if w.Code != http.StatusPermanentRedirect {
+			t.Errorf("Wrong code: want=%d, got=%d", http.StatusPermanentRedirect, w.Code)
+		}
+	})
+
+	// We do not expect CONNECT methods to be canonicalized (eg. if there is no
+	// '/' at the beginning, the request is used as is)
+	t.Run(http.MethodConnect, func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodConnect, "/profile/me/", nil)
+		req.URL.Path = req.URL.Path[1:]
+		h, req := m.Handler(req)
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, req)
+		if w.Code != http.StatusNotFound {
+			t.Errorf("Wrong code: want=%d, got=%d", http.StatusNotFound, w.Code)
+		}
+	})
 }
