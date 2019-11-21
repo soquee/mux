@@ -5,9 +5,9 @@
 // include typed path parameters and wildcards (see "URL Parameters").
 //
 //	m := mux.New(
-//		mux.HandleFunc(http.MethodGet, "/profile/{username string}", http.NotFoundHandler())
-//		mux.HandleFunc(http.MethodGet, "/profile", http.RedirectHandler("/profile/me", http.StatusPermanentRedirect))
-//		mux.HandleFunc(http.MethodPost, "/logout", logoutHandler())
+//		mux.Handle(http.MethodGet, "/profile/{username string}", http.NotFoundHandler()),
+//		mux.HandleFunc(http.MethodGet, "/profile", http.RedirectHandler("/profile/me", http.StatusPermanentRedirect)),
+//		mux.Handle(http.MethodPost, "/logout", logoutHandler()),
 //	)
 //
 // URL Parameters
