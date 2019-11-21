@@ -101,14 +101,14 @@ func (mux *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Handler returns the handler to use for the given request, consulting
 // r.URL.Path.
-// It always returns a non-nil handler.
+// It always returns a non-nil handler and request.
 //
 // The path used is unchanged for CONNECT requests.
 //
 // If there is no registered handler that applies to the request, Handler
-// returns a ``page not found'' handler and an empty pattern.
-// The new request uses a context that contains any route parameters that were
-// matched against the request path.
+// returns a page not found handler.
+// If a new request is returned it uses a context that contains any route
+// parameters that were matched against the request path.
 func (mux *ServeMux) Handler(r *http.Request) (http.Handler, *http.Request) {
 	return mux.handler(r)
 }
