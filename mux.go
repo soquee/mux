@@ -23,13 +23,28 @@
 //     uint   eg. 0, 1 (uint64 in Go)
 //     float  eg. 1, 1.123, -1.123 (float64 in Go)
 //     string eg. anything ({string} is the same as {})
-//     path   eg. files/123.png (must be the last path component)
+//     path   eg. files/123.png
+//     wild   eg. files/123.png (must be the last path component)
 //
 // All numeric types are 64 bits wide.
-// Parameters of type "path" match the remainder of the input path and therefore
-// may only appear as the final component of a route:
+// Parameters of type "path" always match the current position of the input path
+// but have their value set to the remainder of the path.
+// The rest of the path continues to be matched as normal.
+// For example, the route:
 //
-//     /file/{p path}
+//     /file/{p path}/foo
+//
+// matches both /file/a/foo and /file/b/foo and p will have the value "a/foo"
+// and "b/foo" respectively.
+// Parameters of type "wild" are like "path" except that they match the
+// remainder of the path and therefore may only appear as the final component of
+// a route.
+// For example, the route:
+//
+//     /file/{p wild}
+//
+// matches /file/foo.png and /file/myalbum/foo.png and p will have the value
+// "foo.png" and "myalbum/foo.png" respectively.
 //
 // To retrieve the value of named path parameters see the Param function and the
 // examples.
@@ -54,7 +69,8 @@ import (
 
 const (
 	typStatic = "static"
-	typWild   = "path"
+	typWild   = "wild"
+	typPath   = "path"
 	typString = "string"
 	typUint   = "uint"
 	typInt    = "int"
@@ -254,7 +270,7 @@ func parseParam(pattern string) (name string, typ string) {
 	}
 
 	switch typ {
-	case typInt, typUint, typFloat, typString, typWild:
+	case typInt, typUint, typFloat, typString, typWild, typPath:
 		return pattern[1:idx], typ
 	}
 	panic(fmt.Sprintf("invalid type: %q", typ))

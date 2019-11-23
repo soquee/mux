@@ -37,6 +37,9 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 	case typString:
 		r = addValue(r, n.name, n.typ, part, offset, part)
 		return part, remain, r
+	case typPath:
+		r = addValue(r, n.name, n.typ, path, offset, path)
+		return part, remain, r
 	case typUint:
 		v, err := strconv.ParseUint(part, 10, 64)
 		if err != nil {

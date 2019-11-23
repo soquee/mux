@@ -12,9 +12,9 @@ import (
 	"code.soquee.net/mux"
 )
 
-func Example_path() {
+func Example_wild() {
 	m := mux.New(
-		mux.HandleFunc("GET", "/sha256/{wildcard path}", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("GET", "/sha256/{wildcard wild}", func(w http.ResponseWriter, r *http.Request) {
 			val, _ := mux.Param(r, "wildcard")
 			sum := sha256.Sum256([]byte(val.Raw))
 			fmt.Fprintf(w, "the hash of %q is %x", val.Raw, sum)
@@ -31,6 +31,26 @@ func Example_path() {
 	io.Copy(os.Stdout, resp.Body)
 	// Output:
 	// the hash of "a/b" is c14cddc033f64b9dea80ea675cf280a015e672516090a5626781153dc68fea11
+}
+
+func Example_path() {
+	m := mux.New(
+		mux.HandleFunc("GET", "/files/{p path}/cover.png", func(w http.ResponseWriter, r *http.Request) {
+			val, _ := mux.Param(r, "p")
+			fmt.Fprintf(w, "downloading file %q…", val.Raw)
+		}),
+	)
+
+	server := httptest.NewServer(m)
+	resp, err := http.Get(server.URL + "/files/myalbum/cover.png")
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	io.Copy(os.Stdout, resp.Body)
+	// Output:
+	// downloading file "myalbum/cover.png"…
 }
 
 func Example_normalization() {

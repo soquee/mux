@@ -57,14 +57,14 @@ var paramsTests = [...]struct {
 		noMatch: true,
 	},
 	2: {
-		routes: []string{"/one/{other path}"},
+		routes: []string{"/one/{other wild}"},
 		path:   "/one/two/three",
 		params: []mux.ParamInfo{
 			{
 				Value:  "two/three",
 				Raw:    "two/three",
 				Name:   "other",
-				Type:   "path",
+				Type:   "wild",
 				Offset: 5,
 			},
 		},
@@ -93,6 +93,32 @@ var paramsTests = [...]struct {
 	8: {
 		routes: []string{"unclean/../path"},
 		panics: true,
+	},
+	9: {
+		routes: []string{"/one/{other path}/three"},
+		path:   "/one/two/three",
+		params: []mux.ParamInfo{
+			{
+				Value:  "two/three",
+				Raw:    "two/three",
+				Name:   "other",
+				Type:   "path",
+				Offset: 5,
+			},
+		},
+	},
+	10: {
+		routes: []string{"/one/{other path}/three"},
+		path:   "/one/foo/three",
+		params: []mux.ParamInfo{
+			{
+				Value:  "foo/three",
+				Raw:    "foo/three",
+				Name:   "other",
+				Type:   "path",
+				Offset: 5,
+			},
+		},
 	},
 }
 

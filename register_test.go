@@ -76,10 +76,10 @@ var registerTests = [...]struct {
 		},
 	},
 	7: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("GET", "/{path}/user", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "/{wild}/user", failHandler(t))}
 	}},
 	8: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("GET", "/{named path}/user", failHandler(t))}
+		return []mux.Option{mux.Handle("GET", "/{named wild}/user", failHandler(t))}
 	}},
 	9: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{
@@ -197,6 +197,12 @@ var registerTests = [...]struct {
 		return []mux.Option{
 			mux.Handle("GET", "test", failHandler(t)),
 		}
+	}},
+	26: {routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{mux.Handle("GET", "/{path}/user", failHandler(t))}
+	}},
+	27: {routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{mux.Handle("GET", "/{named path}/user", failHandler(t))}
 	}},
 }
 
