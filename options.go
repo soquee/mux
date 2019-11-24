@@ -90,10 +90,6 @@ func Handle(method, r string, h http.Handler) Option {
 		for part, remain := nextPart(r); remain != "" || part != ""; part, remain = nextPart(remain) {
 			name, typ := parseParam(part)
 
-			if typ == typWild && remain != "" {
-				panic(fmt.Sprintf("wildcards must be the last component in a route: /%s", r))
-			}
-
 			// If there are already children, check that this one is compatible with
 			// them.
 			if len(pointer.child) > 0 {

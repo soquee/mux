@@ -75,11 +75,11 @@ var registerTests = [...]struct {
 			{path: "/nope", code: 404},
 		},
 	},
-	7: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("GET", "/{wild}/user", failHandler(t))}
+	7: {routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{mux.Handle("GET", "/{path}/user", failHandler(t))}
 	}},
-	8: {panics: true, routes: func(t *testing.T) []mux.Option {
-		return []mux.Option{mux.Handle("GET", "/{named wild}/user", failHandler(t))}
+	8: {routes: func(t *testing.T) []mux.Option {
+		return []mux.Option{mux.Handle("GET", "/{named path}/user", failHandler(t))}
 	}},
 	9: {panics: true, routes: func(t *testing.T) []mux.Option {
 		return []mux.Option{

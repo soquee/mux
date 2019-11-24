@@ -57,14 +57,14 @@ var paramsTests = [...]struct {
 		noMatch: true,
 	},
 	2: {
-		routes: []string{"/one/{other wild}"},
+		routes: []string{"/one/{other path}"},
 		path:   "/one/two/three",
 		params: []mux.ParamInfo{
 			{
 				Value:  "two/three",
 				Raw:    "two/three",
 				Name:   "other",
-				Type:   "wild",
+				Type:   "path",
 				Offset: 5,
 			},
 		},

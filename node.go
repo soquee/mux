@@ -20,13 +20,6 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 		return "", "", r
 	}
 
-	// wildcards are a special case that always match the entire remainder of the
-	// path.
-	if n.typ == typWild {
-		r = addValue(r, n.name, n.typ, path, offset, path)
-		return path, "", r
-	}
-
 	part, remain = nextPart(path)
 	switch n.typ {
 	case typStatic:
@@ -37,8 +30,13 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 	case typString:
 		r = addValue(r, n.name, n.typ, part, offset, part)
 		return part, remain, r
-	case typPath:
+	case typWild:
 		r = addValue(r, n.name, n.typ, path, offset, path)
+
+		// If we're the last node in the route, consume the remainder of the path.
+		if len(n.child) == 0 {
+			return path, "", r
+		}
 		return part, remain, r
 	case typUint:
 		v, err := strconv.ParseUint(part, 10, 64)
