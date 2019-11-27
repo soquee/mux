@@ -222,8 +222,6 @@ nodeloop:
 	return mux.notFound, r
 }
 
-type route struct{}
-
 // parseParam returns a node with an empty handler from a path component.
 func parseParam(pattern string) (name string, typ string) {
 	// README:
