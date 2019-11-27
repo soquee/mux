@@ -3,7 +3,6 @@ package mux_test
 import (
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strconv"
 	"testing"
 
@@ -22,32 +21,28 @@ var paramsTests = [...]struct {
 		path:   "/user/123/-11/me/1.123",
 		params: []mux.ParamInfo{
 			{
-				Value:  uint64(123),
-				Raw:    "123",
-				Name:   "account",
-				Type:   "uint",
-				Offset: 6,
+				Value: uint64(123),
+				Raw:   "123",
+				Name:  "account",
+				Type:  "uint",
 			},
 			{
-				Value:  int64(-11),
-				Raw:    "-11",
-				Name:   "user",
-				Type:   "int",
-				Offset: 10,
+				Value: int64(-11),
+				Raw:   "-11",
+				Name:  "user",
+				Type:  "int",
 			},
 			{
-				Value:  "me",
-				Raw:    "me",
-				Name:   "name",
-				Type:   "string",
-				Offset: 14,
+				Value: "me",
+				Raw:   "me",
+				Name:  "name",
+				Type:  "string",
 			},
 			{
-				Value:  float64(1.123),
-				Raw:    "1.123",
-				Name:   "f",
-				Type:   "float",
-				Offset: 17,
+				Value: float64(1.123),
+				Raw:   "1.123",
+				Name:  "f",
+				Type:  "float",
 			},
 		},
 	},
@@ -61,11 +56,10 @@ var paramsTests = [...]struct {
 		path:   "/one/two/three",
 		params: []mux.ParamInfo{
 			{
-				Value:  "two/three",
-				Raw:    "two/three",
-				Name:   "other",
-				Type:   "path",
-				Offset: 5,
+				Value: "two/three",
+				Raw:   "two/three",
+				Name:  "other",
+				Type:  "path",
 			},
 		},
 	},
@@ -94,6 +88,10 @@ var paramsTests = [...]struct {
 		routes: []string{"unclean/../path"},
 		panics: true,
 	},
+	9: {
+		routes: []string{"/{}/"},
+		path:   "/b/",
+	},
 }
 
 // Used as an HTTP status code code to make sure the test path matches at
@@ -106,6 +104,14 @@ const (
 
 func paramsHandler(t *testing.T, params []mux.ParamInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		p, err := mux.CanonicalPath(r)
+		if err != nil {
+			t.Errorf("Error while generating canonical path: %v", err)
+		}
+		if p != r.URL.Path {
+			t.Errorf("Unexpected path generated from context: want=%q, got=%q", r.URL.Path, p)
+		}
+
 		w.WriteHeader(testStatusCode)
 		for _, v := range params {
 			pinfo, ok := mux.Param(r, v.Name)
@@ -113,8 +119,17 @@ func paramsHandler(t *testing.T, params []mux.ParamInfo) http.HandlerFunc {
 				t.Errorf("No such parameter found %q", v.Name)
 				continue
 			}
-			if !reflect.DeepEqual(pinfo, v) {
-				t.Errorf("Param do not match: want=%+v, got=%+v)", v, pinfo)
+			if pinfo.Value != v.Value {
+				t.Errorf("Param values do not match: want=%v, got=%v)", v.Value, pinfo.Value)
+			}
+			if pinfo.Raw != v.Raw {
+				t.Errorf("Param raw values do not match: want=%q, got=%q)", v.Raw, pinfo.Raw)
+			}
+			if pinfo.Name != v.Name {
+				t.Errorf("Param names do not match: want=%q, got=%q)", v.Name, pinfo.Name)
+			}
+			if pinfo.Type != v.Type {
+				t.Errorf("Param types do not match: want=%s, got=%s)", v.Type, pinfo.Type)
 			}
 		}
 	}

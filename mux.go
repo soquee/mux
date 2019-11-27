@@ -46,11 +46,16 @@
 package mux // import "code.soquee.net/mux"
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"path"
 	"strings"
 )
+
+// ctxRoute is a type used as the context key when storing a route on the HTTP
+// context for future use.
+type ctxRoute struct{}
 
 const (
 	typStatic = "static"
@@ -144,6 +149,8 @@ func (mux *ServeMux) handler(r *http.Request) (http.Handler, *http.Request) {
 			}
 			return mux.notFound, r
 		}
+
+		r = r.WithContext(context.WithValue(r.Context(), ctxRoute{}, mux.node.route))
 		return h, r
 	}
 
@@ -155,7 +162,7 @@ nodeloop:
 		if len(node.child) == 1 && node.child[0].typ != typStatic {
 			var part, remain string
 			part, remain, r = node.child[0].match(path, offset, r)
-			offset += uint(len(part)) + 1
+			offset++
 
 			// If the type doesn't match, we're done.
 			if part == "" {
@@ -175,6 +182,8 @@ nodeloop:
 					}
 					return mux.notFound, r
 				}
+
+				r = r.WithContext(context.WithValue(r.Context(), ctxRoute{}, node.child[0].route))
 				return h, r
 			}
 			node = &node.child[0]
@@ -186,7 +195,7 @@ nodeloop:
 		for _, child := range node.child {
 			var part, remain string
 			part, remain, r = child.match(path, offset, r)
-			offset += uint(len(part)) + 1
+			offset++
 			// The child did not match, so check the next.
 			if part == "" {
 				path = remain
@@ -206,6 +215,8 @@ nodeloop:
 					}
 					return mux.notFound, r
 				}
+
+				r = r.WithContext(context.WithValue(r.Context(), ctxRoute{}, child.route))
 				return h, r
 			}
 

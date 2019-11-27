@@ -9,6 +9,7 @@ import (
 type node struct {
 	name     string
 	typ      string
+	route    string
 	handlers map[string]http.Handler
 
 	child []node
@@ -65,11 +66,12 @@ func (n *node) match(path string, offset uint, r *http.Request) (part string, re
 func addValue(r *http.Request, name, typ, raw string, offset uint, val interface{}) *http.Request {
 	if name != "" {
 		pinfo := ParamInfo{
-			Value:  val,
-			Raw:    raw,
-			Name:   name,
-			Type:   typ,
-			Offset: offset,
+			Value: val,
+			Raw:   raw,
+			Name:  name,
+			Type:  typ,
+
+			offset: offset,
 		}
 		return r.WithContext(context.WithValue(r.Context(), ctxParam(name), pinfo))
 	}

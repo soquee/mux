@@ -82,6 +82,7 @@ func Handle(method, r string, h http.Handler) Option {
 			if _, ok := pointer.handlers[method]; ok {
 				panic(fmt.Sprintf(alreadyRegistered, method, r))
 			}
+			pointer.route = r
 			pointer.handlers[method] = h
 			return
 		}
@@ -117,6 +118,7 @@ func Handle(method, r string, h http.Handler) Option {
 						// If this is the path we want to register and no handler has been
 						// registered for it, add one:
 						if _, ok := child.handlers[method]; !ok {
+							pointer.child[i].route = r
 							pointer.child[i].handlers[method] = h
 							continue pathloop
 						} else {
@@ -138,6 +140,7 @@ func Handle(method, r string, h http.Handler) Option {
 				handlers: make(map[string]http.Handler),
 			}
 			if remain == "" {
+				n.route = r
 				n.handlers[method] = h
 			}
 

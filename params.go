@@ -19,9 +19,11 @@ type ParamInfo struct {
 	// Type type of the route component that the parameter was matched against
 	// (for example "int" in "{name int}")
 	Type string
-	// The offset in the path where this parameter was found (for example if "10"
-	// is parsed out of the path "/10" the offset is 1)
-	Offset uint
+
+	// offset is the number of the component in the route. Eg. a param foo in the
+	// route /{foo int} has offset 1 (zero being the root node, which is never a
+	// parameter).
+	offset uint
 }
 
 // Param returns the named route parameter from the requests context.

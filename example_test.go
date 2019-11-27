@@ -41,10 +41,13 @@ func Example_normalization() {
 			// golang.org/x/text/secure/precis package instead of lowercasing.
 			normalized := strings.ToLower(username.Raw)
 
-			// If the username had any capital letters, redirect to the canonical
-			// username.
+			// If the username is not canonical, redirect.
 			if normalized != username.Raw {
-				newPath := r.URL.Path[:username.Offset] + normalized + r.URL.Path[username.Offset+uint(len(username.Raw)):]
+				r = mux.WithParameter(r, username.Name, normalized)
+				newPath, err := mux.CanonicalPath(r)
+				if err != nil {
+					panic(fmt.Errorf("mux_test: error creating canonicalized path: %w", err))
+				}
 				http.Redirect(w, r, newPath, http.StatusPermanentRedirect)
 				return
 			}
@@ -55,6 +58,8 @@ func Example_normalization() {
 	)
 
 	server := httptest.NewServer(m)
+	defer server.Close()
+
 	resp, err := http.Get(server.URL + "/profile/Me/personal")
 	if err != nil {
 		panic(err)
