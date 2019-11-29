@@ -43,8 +43,8 @@ func Example_normalization() {
 
 			// If the username is not canonical, redirect.
 			if normalized != username.Raw {
-				r = mux.WithParameter(r, username.Name, normalized)
-				newPath, err := mux.CanonicalPath(r)
+				r = mux.WithParam(r, username.Name, normalized)
+				newPath, err := mux.Path(r)
 				if err != nil {
 					panic(fmt.Errorf("mux_test: error creating canonicalized path: %w", err))
 				}

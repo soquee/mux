@@ -104,7 +104,7 @@ const (
 
 func paramsHandler(t *testing.T, params []mux.ParamInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		p, err := mux.CanonicalPath(r)
+		p, err := mux.Path(r)
 		if err != nil {
 			t.Errorf("Error while generating canonical path: %v", err)
 		}

@@ -16,9 +16,9 @@ var (
 // given route parameter.
 // If the parameter does not exist, the original request is returned unaltered.
 //
-// Because WithParameter is used to normalize request parameters after the route
+// Because WithParam is used to normalize request parameters after the route
 // has already been resolved, all replaced parameters are of type string.
-func WithParameter(r *http.Request, name, val string) *http.Request {
+func WithParam(r *http.Request, name, val string) *http.Request {
 	pinfo, ok := Param(r, name)
 	if !ok {
 		return r
@@ -30,12 +30,12 @@ func WithParameter(r *http.Request, name, val string) *http.Request {
 	return r.WithContext(context.WithValue(r.Context(), ctxParam(name), pinfo))
 }
 
-// CanonicalPath returns the request path by applying the route parameters found
-// in the context to the route used to match the given request.
+// Path returns the request path by applying the route parameters found in the
+// context to the route used to match the given request.
 // This value may be different from r.URL.Path if some form of normalization has
 // been applied to a route parameter, in which case the user may choose to issue
 // a redirect to the canonical path.
-func CanonicalPath(r *http.Request) (string, error) {
+func Path(r *http.Request) (string, error) {
 	route := r.Context().Value(ctxRoute{}).(string)
 	if route == "" {
 		return "", errNoRoute
