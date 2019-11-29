@@ -114,8 +114,8 @@ func paramsHandler(t *testing.T, params []mux.ParamInfo) http.HandlerFunc {
 
 		w.WriteHeader(testStatusCode)
 		for _, v := range params {
-			pinfo, ok := mux.Param(r, v.Name)
-			if !ok {
+			pinfo := mux.Param(r, v.Name)
+			if pinfo.Value == nil {
 				t.Errorf("No such parameter found %q", v.Name)
 				continue
 			}
@@ -166,8 +166,8 @@ func TestParams(t *testing.T) {
 }
 
 func TestParamNotFound(t *testing.T) {
-	pinfo, ok := mux.Param(httptest.NewRequest("GET", "/", nil), "badparam")
-	if ok {
+	pinfo := mux.Param(httptest.NewRequest("GET", "/", nil), "badparam")
+	if pinfo.Value != nil {
 		t.Errorf("Did not expect to find param but got %+v", pinfo)
 	}
 }

@@ -19,8 +19,8 @@ var (
 // Because WithParam is used to normalize request parameters after the route
 // has already been resolved, all replaced parameters are of type string.
 func WithParam(r *http.Request, name, val string) *http.Request {
-	pinfo, ok := Param(r, name)
-	if !ok {
+	pinfo := Param(r, name)
+	if pinfo.Value == nil {
 		return r
 	}
 
@@ -80,8 +80,8 @@ func Path(r *http.Request) (string, error) {
 				return "", err
 			}
 		default:
-			pinfo, ok := Param(r, name)
-			if !ok {
+			pinfo := Param(r, name)
+			if pinfo.Value == nil {
 				return "", errNoParam
 			}
 			_, err = canonicalPath.WriteString(pinfo.Raw)

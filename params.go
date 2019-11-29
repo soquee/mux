@@ -10,6 +10,7 @@ type ctxParam string
 // ParamInfo represents a route parameter and related metadata.
 type ParamInfo struct {
 	// The parsed value of the parameter (for example int64(10))
+	// If and only if no such parameter existed on the route, Value will be nil.
 	Value interface{}
 	// The raw value of the parameter (for example "10")
 	Raw string
@@ -27,10 +28,8 @@ type ParamInfo struct {
 }
 
 // Param returns the named route parameter from the requests context.
-func Param(r *http.Request, name string) (pinfo ParamInfo, ok bool) {
+func Param(r *http.Request, name string) ParamInfo {
 	v := r.Context().Value(ctxParam(name))
-	if v == nil {
-		return ParamInfo{}, false
-	}
-	return v.(ParamInfo), true
+	pinfo, _ := v.(ParamInfo)
+	return pinfo
 }

@@ -15,7 +15,7 @@ import (
 func Example_path() {
 	m := mux.New(
 		mux.HandleFunc("GET", "/sha256/{wildcard path}", func(w http.ResponseWriter, r *http.Request) {
-			val, _ := mux.Param(r, "wildcard")
+			val := mux.Param(r, "wildcard")
 			sum := sha256.Sum256([]byte(val.Raw))
 			fmt.Fprintf(w, "the hash of %q is %x", val.Raw, sum)
 		}),
@@ -36,7 +36,7 @@ func Example_path() {
 func Example_normalization() {
 	m := mux.New(
 		mux.HandleFunc("GET", "/profile/{username string}/personal", func(w http.ResponseWriter, r *http.Request) {
-			username, _ := mux.Param(r, "username")
+			username := mux.Param(r, "username")
 			// You probably want to use the Username Case Mapped profile from the
 			// golang.org/x/text/secure/precis package instead of lowercasing.
 			normalized := strings.ToLower(username.Raw)
