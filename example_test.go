@@ -13,15 +13,15 @@ import (
 )
 
 func Example_path() {
-	m := mux.New(
+	serveMux := mux.New(
 		mux.HandleFunc("GET", "/sha256/{wildcard path}", func(w http.ResponseWriter, r *http.Request) {
-			val, _ := mux.Param(r, "wildcard")
+			val := mux.Param(r, "wildcard")
 			sum := sha256.Sum256([]byte(val.Raw))
 			fmt.Fprintf(w, "the hash of %q is %x", val.Raw, sum)
 		}),
 	)
 
-	server := httptest.NewServer(m)
+	server := httptest.NewServer(serveMux)
 	resp, err := http.Get(server.URL + "/sha256/a/b")
 	if err != nil {
 		panic(err)
@@ -34,17 +34,20 @@ func Example_path() {
 }
 
 func Example_normalization() {
-	m := mux.New(
+	serveMux := mux.New(
 		mux.HandleFunc("GET", "/profile/{username string}/personal", func(w http.ResponseWriter, r *http.Request) {
-			username, _ := mux.Param(r, "username")
+			username := mux.Param(r, "username")
 			// You probably want to use the Username Case Mapped profile from the
-			// golang.org/x/text/secure/precis package instead of lowercasing.
+			// golang.org/x/text/secure/precis package instead.
 			normalized := strings.ToLower(username.Raw)
 
-			// If the username had any capital letters, redirect to the canonical
-			// username.
+			// If the username is not canonical, redirect.
 			if normalized != username.Raw {
-				newPath := r.URL.Path[:username.Offset] + normalized + r.URL.Path[username.Offset+uint(len(username.Raw)):]
+				r = mux.WithParam(r, username.Name, normalized)
+				newPath, err := mux.Path(r)
+				if err != nil {
+					panic(fmt.Errorf("mux_test: error creating canonicalized path: %w", err))
+				}
 				http.Redirect(w, r, newPath, http.StatusPermanentRedirect)
 				return
 			}
@@ -54,7 +57,9 @@ func Example_normalization() {
 		}),
 	)
 
-	server := httptest.NewServer(m)
+	server := httptest.NewServer(serveMux)
+	defer server.Close()
+
 	resp, err := http.Get(server.URL + "/profile/Me/personal")
 	if err != nil {
 		panic(err)

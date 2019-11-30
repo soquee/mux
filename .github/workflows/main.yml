@@ -1,0 +1,12 @@
+name: PRs
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Auto Close
+      uses: superbrothers/auto-close-action@v0.0.1
+      env:
+        COMMENT: This repo is a mirror and does not accept PRs. See `README.md` and `CONTRIBUTING.md` for more information.
