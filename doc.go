@@ -69,22 +69,25 @@
 // issued or some other corrective action can be applied.
 //
 //	serveMux := mux.New(
-//		mux.Handle(http.MethodGet, "/profile/{username string}", func(w http.ResponseWriter, r *http.Request) {
+//		mux.HandleFunc(http.MethodGet, "/profile/{username string}", func(w http.ResponseWriter, r *http.Request) {
 //			username := mux.Param(r, "username")
-//			// You probably want to use the Username Case Mapped profile from the
-//			// golang.org/x/text/secure/precis package instead.
-//			normalized := strings.ToLower(username.Raw)
+//			// golang.org/x/text/secure/precis
+//			normalized, err := precis.UsernameCaseMapped.String(username.Raw)
+//			if err != nil {
+//					…
+//			}
+//
 //			if normalized != username.Raw {
 //				r = mux.WithParam(r, username.Name, normalized)
 //				newPath, err := mux.Path(r)
 //				if err != nil {
-//					panic(fmt.Errorf("mux_test: error creating canonicalized path: %w", err))
+//					…
 //				}
 //				http.Redirect(w, r, newPath, http.StatusPermanentRedirect)
 //				return
 //			}
 //
-//			fmt.Fprintln(w, "The canonical username is:", pinfo.Raw)
+//			fmt.Fprintln(w, "The canonical username is:", username.Raw)
 //		}),
 //	)
 //
