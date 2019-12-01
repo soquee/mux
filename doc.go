@@ -41,6 +41,15 @@
 //     /user/{b string}/edit
 //     /user/me
 //
+// This is to prevent a common class of bug where a static route conflicts with
+// a path parameter and it is not clear which should be selected.
+// For example, if the route /users/new and /users/{username string} could be
+// registered at the same time and someone attempts to register the user "new",
+// it might make the new user page impossible to visit, or break the new users
+// profile.
+// Disallowing conflicting routes keeps things simple and eliminates this class
+// of issues.
+//
 // When a route is matched, the value of each named path parameter is stored on
 // the request context.
 // To retrieve the value of named path parameters from within a handler, the
