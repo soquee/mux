@@ -1,5 +1,4 @@
 name: PR Closer
-
 on: [pull_request]
 
 jobs:
