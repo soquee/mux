@@ -1,0 +1,12 @@
+image: alpine/edge
+secrets:
+  - 6fff3a68-f9e5-4e0e-9b19-ee7627ff573c
+  - d66b1d1c-77da-4c7c-bd7a-afe0f83f34ed
+tasks:
+  - info: |
+      git version
+  - sync: |
+      git clone --reference ./mux --mirror https://git.sr.ht/~samwhited/mux mux.git
+      cd mux.git/
+      cat ~/.ssh/github >> ~/.ssh/known_hosts
+      git push --mirror git@github.com:soquee/mux.git
